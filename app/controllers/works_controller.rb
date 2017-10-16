@@ -2,6 +2,7 @@ class WorksController < ApplicationController
   # We should always be able to tell what category
   # of work we're dealing with
   before_action :category_from_work, except: [:root, :index, :new, :create]
+  before_action :creator, only:[:edit, :update, :destroy]
   skip_before_action :require_login, only: [:root]
 
   def root
@@ -18,10 +19,12 @@ class WorksController < ApplicationController
 
   def new
     @work = Work.new
+    @work[:user_id] = @login_user.id
   end
 
   def create
     @work = Work.new(media_params)
+    @work[:user_id] = @login_user.id
     @media_category = @work.category
     if @work.save
       flash[:status] = :success
@@ -89,6 +92,16 @@ class WorksController < ApplicationController
     # or the error message
     redirect_back fallback_location: work_path(@work), status: status
   end
+protected
+def creator
+  @user = User.find_by(id: session[:user_id])
+  @work_user_id = @work.user_id
+  unless @user.id == @work_user_id
+    flash[:status] = :failure
+    flash[:result_text] = "Only the user who posted the work can edit it."
+    redirect_to root_path
+  end
+end
 
 private
   def media_params
