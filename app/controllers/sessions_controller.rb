@@ -24,7 +24,7 @@ class SessionsController < ApplicationController
   #   end
   #   redirect_to root_path
   # end
-
+  #
   # def logout
   #   session[:user_id] = nil
   #   flash[:status] = :success
@@ -40,6 +40,7 @@ class SessionsController < ApplicationController
         # User doesn't match anything in the DB
         # Attempt to create a new user
         user = User.build_from_github(auth_hash)
+        save_and_flash(user)
       else
         flash[:success] = "Logged in successfully"
         redirect_to root_path

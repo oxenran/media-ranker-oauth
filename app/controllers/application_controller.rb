@@ -8,7 +8,22 @@ class ApplicationController < ActionController::Base
     raise ActionController::RoutingError.new('Not Found')
   end
 
-private
+  protected
+  def save_and_flash(model)
+
+
+    if model
+      flash[:status] = :success
+      flash[:message] = "Successfully saved #{model.class} #{Model.id}"
+    else
+      flash.now[:status] = :failure
+      flash.now[:message] = "Failed to save #{model.class}"
+      flash.now[:deltails] = model.errors.messages
+    end
+    return model
+  end
+
+  private
   def find_user
     if session[:user_id]
       @login_user = User.find_by(id: session[:user_id])
