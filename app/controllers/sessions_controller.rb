@@ -31,24 +31,49 @@ class SessionsController < ApplicationController
   #   flash[:result_text] = "Successfully logged out"
   #   redirect_to root_path
   # end
-
   def create
     auth_hash = request.env['omniauth.auth']
 
     if auth_hash['uid']
-      @user = User.find_by(uid: auth_hash[:uid], provider: 'github')
-      if @user.nil?
+      user = User.find_by(uid: auth_hash[:uid], provider: 'github')
+      if user.nil?
         # User doesn't match anything in the DB
         # Attempt to create a new user
+        user = User.build_from_github(auth_hash)
       else
         flash[:success] = "Logged in successfully"
         redirect_to root_path
       end
+
+      # If we get here, we have the user instance
+      session[:user_id] = user.id
     else
       flash[:error] = "Could not log in"
       redirect_to root_path
     end
   end
+
+  def index
+    @user = User.find(session[:user_id]) # < recalls the value set in a previous request
+  end
+
+  # def create
+  #   auth_hash = request.env['omniauth.auth']
+  #
+  #   if auth_hash['uid']
+  #     @user = User.find_by(uid: auth_hash[:uid], provider: 'github')
+  #     if @user.nil?
+  #       # User doesn't match anything in the DB
+  #       # Attempt to create a new user
+  #     else
+  #       flash[:success] = "Logged in successfully"
+  #       redirect_to root_path
+  #     end
+  #   else
+  #     flash[:error] = "Could not log in"
+  #     redirect_to root_path
+  #   end
+  # end
 
 
 
